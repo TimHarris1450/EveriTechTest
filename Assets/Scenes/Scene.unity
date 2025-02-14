@@ -1146,6 +1146,8 @@ GameObject:
   m_Component:
   - component: {fileID: 520265011}
   - component: {fileID: 520265012}
+  - component: {fileID: 520265013}
+  - component: {fileID: 520265014}
   m_Layer: 0
   m_Name: Reel_3
   m_TagString: Untagged
@@ -1225,6 +1227,47 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &520265013
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 520265010}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5c451f994de144a498473800e3ec8ab3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &520265014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 520265010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 970a21b98bbcf5b4ea2f9594e69548de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Symbols:
+  - {fileID: 4084846952332145420, guid: a599a47447cd9134782c7e6447c83941, type: 3}
+  - {fileID: 6556146080417210678, guid: d4d0d306a7304fb4ea4963788812f8ab, type: 3}
+  - {fileID: 3062069808582825161, guid: 91f4e3a4931e7884cbcb00b76d8ffd80, type: 3}
+  - {fileID: 6566521417970644743, guid: 5069365bf87ef6a49a9fe4223fa9ee69, type: 3}
+  - {fileID: 4242344894231103241, guid: a4f6596481f72df4db8296dfb5069224, type: 3}
+  - {fileID: 6705976990656815302, guid: 0ef6ecc8786774d41b95309eef08da89, type: 3}
+  - {fileID: 1642217595396197448, guid: ad66db1b3da963a469ac20c141b0ca02, type: 3}
+  _bonusSymbol: {fileID: 0}
 --- !u!1 &566182103
 GameObject:
   m_ObjectHideFlags: 0
@@ -1331,6 +1374,8 @@ GameObject:
   m_Component:
   - component: {fileID: 662077566}
   - component: {fileID: 662077567}
+  - component: {fileID: 662077568}
+  - component: {fileID: 662077569}
   m_Layer: 0
   m_Name: Reel_2
   m_TagString: Untagged
@@ -1410,6 +1455,47 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &662077568
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662077565}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5c451f994de144a498473800e3ec8ab3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &662077569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 662077565}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 970a21b98bbcf5b4ea2f9594e69548de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Symbols:
+  - {fileID: 4084846952332145420, guid: a599a47447cd9134782c7e6447c83941, type: 3}
+  - {fileID: 6556146080417210678, guid: d4d0d306a7304fb4ea4963788812f8ab, type: 3}
+  - {fileID: 3062069808582825161, guid: 91f4e3a4931e7884cbcb00b76d8ffd80, type: 3}
+  - {fileID: 6566521417970644743, guid: 5069365bf87ef6a49a9fe4223fa9ee69, type: 3}
+  - {fileID: 4242344894231103241, guid: a4f6596481f72df4db8296dfb5069224, type: 3}
+  - {fileID: 6705976990656815302, guid: 0ef6ecc8786774d41b95309eef08da89, type: 3}
+  - {fileID: 1642217595396197448, guid: ad66db1b3da963a469ac20c141b0ca02, type: 3}
+  _bonusSymbol: {fileID: 0}
 --- !u!1001 &687209298
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1610,6 +1696,8 @@ GameObject:
   m_Component:
   - component: {fileID: 942365601}
   - component: {fileID: 942365602}
+  - component: {fileID: 942365603}
+  - component: {fileID: 942365604}
   m_Layer: 0
   m_Name: Reel_4
   m_TagString: Untagged
@@ -1689,6 +1777,47 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &942365603
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942365600}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5c451f994de144a498473800e3ec8ab3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &942365604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 942365600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 970a21b98bbcf5b4ea2f9594e69548de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Symbols:
+  - {fileID: 4084846952332145420, guid: a599a47447cd9134782c7e6447c83941, type: 3}
+  - {fileID: 6556146080417210678, guid: d4d0d306a7304fb4ea4963788812f8ab, type: 3}
+  - {fileID: 3062069808582825161, guid: 91f4e3a4931e7884cbcb00b76d8ffd80, type: 3}
+  - {fileID: 6566521417970644743, guid: 5069365bf87ef6a49a9fe4223fa9ee69, type: 3}
+  - {fileID: 4242344894231103241, guid: a4f6596481f72df4db8296dfb5069224, type: 3}
+  - {fileID: 6705976990656815302, guid: 0ef6ecc8786774d41b95309eef08da89, type: 3}
+  - {fileID: 1642217595396197448, guid: ad66db1b3da963a469ac20c141b0ca02, type: 3}
+  _bonusSymbol: {fileID: 0}
 --- !u!1 &954229152
 GameObject:
   m_ObjectHideFlags: 0
@@ -1731,6 +1860,8 @@ GameObject:
   m_Component:
   - component: {fileID: 964364474}
   - component: {fileID: 964364475}
+  - component: {fileID: 964364476}
+  - component: {fileID: 964364477}
   m_Layer: 0
   m_Name: Reel_5
   m_TagString: Untagged
@@ -1810,6 +1941,47 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &964364476
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 964364473}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5c451f994de144a498473800e3ec8ab3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &964364477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 964364473}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 970a21b98bbcf5b4ea2f9594e69548de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Symbols:
+  - {fileID: 4084846952332145420, guid: a599a47447cd9134782c7e6447c83941, type: 3}
+  - {fileID: 6556146080417210678, guid: d4d0d306a7304fb4ea4963788812f8ab, type: 3}
+  - {fileID: 3062069808582825161, guid: 91f4e3a4931e7884cbcb00b76d8ffd80, type: 3}
+  - {fileID: 6566521417970644743, guid: 5069365bf87ef6a49a9fe4223fa9ee69, type: 3}
+  - {fileID: 4242344894231103241, guid: a4f6596481f72df4db8296dfb5069224, type: 3}
+  - {fileID: 6705976990656815302, guid: 0ef6ecc8786774d41b95309eef08da89, type: 3}
+  - {fileID: 1642217595396197448, guid: ad66db1b3da963a469ac20c141b0ca02, type: 3}
+  _bonusSymbol: {fileID: 0}
 --- !u!1001 &965557701
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2100,6 +2272,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1134419102}
   - component: {fileID: 1134419103}
+  - component: {fileID: 1134419104}
+  - component: {fileID: 1134419105}
   m_Layer: 0
   m_Name: Reel_1
   m_TagString: Untagged
@@ -2179,6 +2353,47 @@ SpriteRenderer:
   m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!95 &1134419104
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1134419101}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 5c451f994de144a498473800e3ec8ab3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1134419105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1134419101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 970a21b98bbcf5b4ea2f9594e69548de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Symbols:
+  - {fileID: 4084846952332145420, guid: a599a47447cd9134782c7e6447c83941, type: 3}
+  - {fileID: 6556146080417210678, guid: d4d0d306a7304fb4ea4963788812f8ab, type: 3}
+  - {fileID: 3062069808582825161, guid: 91f4e3a4931e7884cbcb00b76d8ffd80, type: 3}
+  - {fileID: 6566521417970644743, guid: 5069365bf87ef6a49a9fe4223fa9ee69, type: 3}
+  - {fileID: 4242344894231103241, guid: a4f6596481f72df4db8296dfb5069224, type: 3}
+  - {fileID: 6705976990656815302, guid: 0ef6ecc8786774d41b95309eef08da89, type: 3}
+  - {fileID: 1642217595396197448, guid: ad66db1b3da963a469ac20c141b0ca02, type: 3}
+  _bonusSymbol: {fileID: 0}
 --- !u!1 &1209655858
 GameObject:
   m_ObjectHideFlags: 0

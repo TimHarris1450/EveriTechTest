@@ -236,6 +236,7 @@ GameObject:
   - component: {fileID: 340506928}
   - component: {fileID: 340506927}
   - component: {fileID: 340506926}
+  - component: {fileID: 340506929}
   m_Layer: 5
   m_Name: Hit
   m_TagString: Untagged
@@ -346,6 +347,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 340506924}
   m_CullTransparentMesh: 1
+--- !u!114 &340506929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340506924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5d38fa94ba4ac4889c2dd7f08e456d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animation: hit
 --- !u!1 &365670124
 GameObject:
   m_ObjectHideFlags: 0
@@ -404,7 +418,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Anticipation
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -493,6 +509,7 @@ GameObject:
   - component: {fileID: 509239350}
   - component: {fileID: 509239349}
   - component: {fileID: 509239348}
+  - component: {fileID: 509239351}
   m_Layer: 5
   m_Name: Win
   m_TagString: Untagged
@@ -603,6 +620,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 509239346}
   m_CullTransparentMesh: 1
+--- !u!114 &509239351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 509239346}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5d38fa94ba4ac4889c2dd7f08e456d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animation: win
 --- !u!1 &732024681
 GameObject:
   m_ObjectHideFlags: 0
@@ -615,6 +645,7 @@ GameObject:
   - component: {fileID: 732024685}
   - component: {fileID: 732024684}
   - component: {fileID: 732024683}
+  - component: {fileID: 732024686}
   m_Layer: 5
   m_Name: Anticipation
   m_TagString: Untagged
@@ -725,6 +756,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 732024681}
   m_CullTransparentMesh: 1
+--- !u!114 &732024686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 732024681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5d38fa94ba4ac4889c2dd7f08e456d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animation: anticipation
 --- !u!1 &817392869
 GameObject:
   m_ObjectHideFlags: 0
@@ -751,7 +795,7 @@ Camera:
   m_GameObject: {fileID: 817392869}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 3
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -858,7 +902,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Win
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -993,7 +1039,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Hit
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1128,7 +1176,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Button
+  m_text: 'Idle
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1217,7 +1267,7 @@ GameObject:
   - component: {fileID: 1762217297}
   - component: {fileID: 1762217296}
   m_Layer: 5
-  m_Name: Frame
+  m_Name: Controller
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1364,6 +1414,7 @@ GameObject:
   - component: {fileID: 2034278402}
   - component: {fileID: 2034278401}
   - component: {fileID: 2034278400}
+  - component: {fileID: 2034278403}
   m_Layer: 5
   m_Name: Idle
   m_TagString: Untagged
@@ -1474,3 +1525,16 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2034278398}
   m_CullTransparentMesh: 1
+--- !u!114 &2034278403
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2034278398}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e5d38fa94ba4ac4889c2dd7f08e456d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animation: idle
