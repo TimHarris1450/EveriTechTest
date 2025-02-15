@@ -25,7 +25,7 @@ public class ImageSetter : MonoBehaviour
     public void SetBonusSymbol()
     {        
         // Check symbols for bonus symbol
-        for(int i = 2; i < 2; i++)
+        for(int i = 2; i <= 3; i++)
         {
             if(transform.GetChild(i).GetChild(0).gameObject == _bonusSymbol)
             {
