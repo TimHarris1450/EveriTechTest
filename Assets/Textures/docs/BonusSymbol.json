@@ -1,0 +1,25 @@
+{ "skeleton": { "images": "T:/UnityProjects/EveriTechTest/Assets/Textures/SpineImages/" },
+"PhotoshopToSpine": { "scale": 1, "padding": 1, "trim": false },
+"bones": [
+	{ "name": "root" }
+],
+"slots": [
+	{ "name": "Frame copy", "bone": "root", "attachment": "Frame copy" },
+	{ "name": "Planet copy", "bone": "root", "attachment": "Planet copy" },
+	{ "name": "Rings copy", "bone": "root", "attachment": "Rings copy" }
+],
+"skins": {
+	"default": {
+		"Frame copy": {
+			"Frame copy": { "x": 250, "y": -250, "width": 502, "height": 502 }
+		},
+		"Planet copy": {
+			"Planet copy": { "x": 250, "y": -250, "width": 502, "height": 502 }
+		},
+		"Rings copy": {
+			"Rings copy": { "x": 250, "y": -250, "width": 502, "height": 502 }
+		}
+	}
+},
+"animations": { "animation": {} }
+}
