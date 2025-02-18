@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Scripts
@@ -31,23 +33,30 @@ namespace Scripts
         }
         // Set the bonus symbol to the 2nd row for activation
         public void SetBonusSymbol()
-        {        
-            if(name == "Reel_1" || name == "Reel_5") { return; }
-            // Check symbols for bonus symbol
-            for (int i = 2; i <= 4; i++)
+        {
+            // check if we are the first or last reel
+            if (name == "Reel_1" || name == "Reel_5")
             {
-                if(transform.GetChild(i).GetChild(0).gameObject == _bonusSymbol)
-                {
-                    Debug.Log("Bonus Symbol Present");
-                    return;
-                }
+                Debug.Log($"{name} is not eligible for a bonus symbol.");
+                return;
             }
-            // if we dont return
+
+            Debug.Log($"{name} is setting a bonus symbol.");
+            StartCoroutine(SetSymbol());
+        }
+        
+        private IEnumerator SetSymbol()
+        {
+            Debug.Log($"Setting bonus symbol on {name}");
             // destroy the child and replace with bonus
             Destroy(transform.GetChild(2).GetChild(0).gameObject);
             GameObject newChild = Instantiate(Symbols[0]);
             _bonusTracker.AddSymbol(newChild.GetComponent<Animator>());
+            _bonusTracker.Increment();
+            _bonusTracker.CheckSymbol();
             newChild.transform.SetParent(transform.GetChild(2), false);
+            yield return new WaitForSeconds(0.25f);
+            newChild.GetComponent<Animator>().SetTrigger("hit");
         }
     }
 }

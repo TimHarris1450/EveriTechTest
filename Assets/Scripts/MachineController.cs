@@ -9,20 +9,18 @@ namespace Scripts
 {
     public class MachineController : MonoBehaviour
     {
-        // Event for reels to stop
-        public UnityEvent OnReelsStop;
         // List of Reels
         [SerializeField]
         public GameObject Reels;
         [SerializeField]
-        private float _wait = 1f;
+        private float _wait = 2f;
         private float _defaultWait;
         [SerializeField]
-        private float _waitIncrememnt = 0.5f;
+        private float _waitIncrememnt = 0.75f;
         [SerializeField]
         private bool _spinning = false;
 
-        // Method for starting and stopping spin routine
+        // method for starting and stopping spin routine
         public void SpinCheck()
         {
             switch (_spinning)
@@ -35,7 +33,7 @@ namespace Scripts
                     break;
             }
         }
-        // Coroutine to incrementally start reels
+        // coroutine to incrementally start reels
         private IEnumerator StartSpin()
         {
             _defaultWait = _wait;
@@ -62,19 +60,29 @@ namespace Scripts
             {
                 // set the animator controller state
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("stop");
-                _wait -= _waitIncrememnt + 0.2f;
+                _wait += 0.5f;
                 yield return new WaitForSeconds(_wait);
             }
             yield return new WaitForSeconds(0.5f);
+            GetBonusSymbols();
             Stopped();
+        }
+
+        private void GetBonusSymbols()
+        {
+            // make a list of bonus symbols
+            List<Animator> bonusSymbols = new List<Animator>();
+            if (GetComponentInChildren<Transform>().name.Contains("Bonus"))
+            {
+                Debug.Log("Found Bonus");
+            }
+            Reels.transform.GetChild(0).GetComponent<Animator>().SetTrigger("hit");
         }
         // method to call when reels stop
         public void Stopped()
         {
             // set spinning to false
             _spinning = false;
-            // invoke the OnReelsStop event
-            OnReelsStop?.Invoke();
         }
     }
 }
