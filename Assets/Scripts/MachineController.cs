@@ -9,14 +9,14 @@ namespace Scripts
 {
     public class MachineController : MonoBehaviour
     {
-        // List of Reels
+
         [SerializeField]
         public GameObject Reels;
         [SerializeField]
         private float _wait = 2f;
         private float _defaultWait;
         [SerializeField]
-        private float _waitIncrememnt = 0.75f;
+        private float _waitIncrement = 0.75f;
         [SerializeField]
         private bool _spinning = false;
 
@@ -38,22 +38,24 @@ namespace Scripts
         {
             _defaultWait = _wait;
             _spinning = true;
+
             // int to increment for reel spin
             for (int i = 0; i < Reels.transform.childCount; i++)
             {
                 // set the animator controller state
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("spin");
-                _wait -= _waitIncrememnt;
+                Animator anim = Reels.transform.GetChild(i).GetChild(2).GetChild(0).GetComponent<Animator>();
+                _wait -= _waitIncrement;
                 yield return new WaitForSeconds(_wait);
             }
             // extra delay for automatic stopping
-            yield return new WaitForSeconds(_wait);
+            yield return new WaitForSeconds(_defaultWait);
             StartCoroutine(StopSpin());
-            StopCoroutine(StartSpin());
         }
         // stopping the reels
         private IEnumerator StopSpin()
         {
+            BonusTracker _bonusTracker = FindObjectOfType<BonusTracker>();
             _wait = _defaultWait;
             // int to increment for reel spin
             for (int i = 0; i < Reels.transform.childCount; i++)
@@ -62,21 +64,11 @@ namespace Scripts
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("stop");
                 _wait += 0.5f;
                 yield return new WaitForSeconds(_wait);
+                _bonusTracker.CheckSymbol();
             }
-            yield return new WaitForSeconds(0.5f);
-            GetBonusSymbols();
+            yield return new WaitForSeconds(_wait);
             Stopped();
-        }
 
-        private void GetBonusSymbols()
-        {
-            // make a list of bonus symbols
-            List<Animator> bonusSymbols = new List<Animator>();
-            if (GetComponentInChildren<Transform>().name.Contains("Bonus"))
-            {
-                Debug.Log("Found Bonus");
-            }
-            Reels.transform.GetChild(0).GetComponent<Animator>().SetTrigger("hit");
         }
         // method to call when reels stop
         public void Stopped()

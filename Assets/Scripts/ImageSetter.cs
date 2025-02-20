@@ -21,11 +21,9 @@ namespace Scripts
             GameObject child = transform.GetChild(childIndex).gameObject;
             // destroy current child
             Destroy(child.transform.GetChild(0).gameObject);
-
             // exclude the bonus symbol from the random selection
             List<GameObject> nonBonusSymbols = Symbols.FindAll(symbol => symbol != _bonusSymbol);
             int rando = Random.Range(0, nonBonusSymbols.Count);
-
             // make a new child
             GameObject newChild = Instantiate(nonBonusSymbols[rando]);
             // add to reel
@@ -40,23 +38,24 @@ namespace Scripts
                 Debug.Log($"{name} is not eligible for a bonus symbol.");
                 return;
             }
-
             Debug.Log($"{name} is setting a bonus symbol.");
             StartCoroutine(SetSymbol());
         }
         
         private IEnumerator SetSymbol()
         {
+            SymbolAnimController sac = FindObjectOfType<SymbolAnimController>();
             Debug.Log($"Setting bonus symbol on {name}");
             // destroy the child and replace with bonus
             Destroy(transform.GetChild(2).GetChild(0).gameObject);
             GameObject newChild = Instantiate(Symbols[0]);
+            Animator anim = newChild.GetComponent<Animator>();
             _bonusTracker.AddSymbol(newChild.GetComponent<Animator>());
             _bonusTracker.Increment();
-            _bonusTracker.CheckSymbol();
             newChild.transform.SetParent(transform.GetChild(2), false);
-            yield return new WaitForSeconds(0.25f);
-            newChild.GetComponent<Animator>().SetTrigger("hit");
+            yield return new WaitForSeconds(0.5f);
+            sac.PlayHit(newChild.GetComponent<Animator>());
+            yield return new WaitUntil(() => anim.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f && !anim.IsInTransition(0));
         }
     }
 }

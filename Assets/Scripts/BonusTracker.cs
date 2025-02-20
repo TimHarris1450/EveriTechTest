@@ -25,33 +25,40 @@ namespace Scripts
         {
             BonusCount += 1;
         }
-        public List<Animator> GetAnimators()
-        {
-            return Animators;
-        }
         // Method to check symbols when spinning stops
         public void CheckSymbol()
         {
-            //if we have 3, stop all animations and play win
-            if (BonusCount == 3)
-            {
-                foreach (Animator anim in new List<Animator>(Animators))
-                {
-                    anim.SetTrigger("win");
-                    _blackHole.PlayBlackHole();
-                }
-                ResetSymbols();
-            }
-            // if we have 2, play hit and anticipation
-            else if (BonusCount == 2)
-            {
-                foreach (Animator anim in new List<Animator>(Animators))
-                {
-                    anim.SetTrigger("anticipation");
-                }
-            }
+            Debug.Log("Checking symbols");
+            StartCoroutine(CheckSymbolCoroutine());
         }
-
+        private IEnumerator CheckSymbolCoroutine()
+        {
+            // get the symbol anim controller
+            SymbolAnimController symAnims = FindObjectOfType<SymbolAnimController>();  
+            // check how many landed bonus symbols and designate animations
+            switch (BonusCount)
+            {
+                //if we have 3, stop all animations and play win
+                case 3:
+                    // play win animation
+                    foreach (Animator anim in Animators)
+                    {
+                        symAnims.PlayWin(Animators);
+                    }
+                    yield return new WaitForSeconds(0.85f);
+                    _blackHole.PlayBlackHole();
+                    ResetSymbols();
+                    break;
+                // if we have 2, play hit and anticipation
+                case 2:
+                    foreach (Animator anim in Animators)
+                    {
+                        symAnims.PlayAnticipation(Animators);
+                    }
+                    break;                
+            }       
+            yield return new WaitForSeconds(1f);
+        }
         // Reset the list
         private void ResetSymbols()
         {
