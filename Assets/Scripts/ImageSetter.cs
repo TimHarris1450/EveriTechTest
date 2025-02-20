@@ -44,14 +44,19 @@ namespace Scripts
         
         private IEnumerator SetSymbol()
         {
+            // reference to the symbol anim controller
             SymbolAnimController sac = FindObjectOfType<SymbolAnimController>();
-            Debug.Log($"Setting bonus symbol on {name}");
             // destroy the child and replace with bonus
             Destroy(transform.GetChild(2).GetChild(0).gameObject);
+            // create new symbol (Yes I know it should be a pool, but this is a small project)
             GameObject newChild = Instantiate(Symbols[0]);
+            // reference animator
             Animator anim = newChild.GetComponent<Animator>();
+            // add to bonus tracker
             _bonusTracker.AddSymbol(newChild.GetComponent<Animator>());
+            // increment the bonus tracker
             _bonusTracker.Increment();
+            // set the parent
             newChild.transform.SetParent(transform.GetChild(2), false);
             yield return new WaitForSeconds(0.5f);
             sac.PlayHit(newChild.GetComponent<Animator>());
