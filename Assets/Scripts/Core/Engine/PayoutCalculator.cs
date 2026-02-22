@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Scripts.Core.Math;
 
 namespace Scripts.Core.Engine
@@ -7,36 +6,55 @@ namespace Scripts.Core.Engine
     public class PayoutCalculator
     {
         private readonly SlotMathModel _model;
+        private readonly List<SymbolData> _regularSymbols = new();
+        private readonly List<SymbolData> _scatterSymbols = new();
 
         public PayoutCalculator(SlotMathModel model)
         {
             _model = model;
+
+            for (int i = 0; i < _model.Symbols.Count; i++)
+            {
+                SymbolData symbol = _model.Symbols[i];
+                if (symbol.IsScatter || symbol.IsBonus)
+                {
+                    _scatterSymbols.Add(symbol);
+                }
+                else
+                {
+                    _regularSymbols.Add(symbol);
+                }
+            }
         }
 
-        public void Evaluate(SpinResult result)
+        public void Evaluate(SpinResult result, bool includeDetails = true)
         {
-            EvaluatePayline(result);
-            EvaluateWays(result);
-            EvaluateScatter(result);
-            result.TotalPayout = result.LineWins.Sum(win => win.Payout) + result.ScatterWins.Sum(win => win.Payout);
-            EvaluateFeatures(result);
+            int totalPayout = 0;
+            totalPayout += EvaluatePayline(result, includeDetails);
+            totalPayout += EvaluateWays(result, includeDetails);
+            totalPayout += EvaluateScatter(result, includeDetails);
+            result.TotalPayout = totalPayout;
+
+            if (includeDetails)
+            {
+                EvaluateFeatures(result);
+            }
         }
 
-        private void EvaluatePayline(SpinResult result)
+        private int EvaluatePayline(SpinResult result, bool includeDetails)
         {
             if (result.LandedSymbolMatrix.Count == 0 || _model.Config.VisibleRows == 0)
             {
-                return;
+                return 0;
             }
 
             int middleRow = _model.Config.VisibleRows / 2;
-            List<int> lineSymbols = result.LandedSymbolMatrix.Select(reel => reel[middleRow]).ToList();
-            int firstSymbol = lineSymbols[0];
+            int firstSymbol = result.LandedSymbolMatrix[0][middleRow];
             int matchCount = 1;
 
-            for (int i = 1; i < lineSymbols.Count; i++)
+            for (int i = 1; i < result.LandedSymbolMatrix.Count; i++)
             {
-                if (lineSymbols[i] != firstSymbol)
+                if (result.LandedSymbolMatrix[i][middleRow] != firstSymbol)
                 {
                     break;
                 }
@@ -44,12 +62,13 @@ namespace Scripts.Core.Engine
                 matchCount++;
             }
 
-            PaytableEntry paylineEntry = _model.Paytable
-                .Where(entry => entry.SymbolId == firstSymbol && entry.MatchCount <= matchCount)
-                .OrderByDescending(entry => entry.MatchCount)
-                .FirstOrDefault();
+            PaytableEntry paylineEntry = FindBestPaytableEntry(firstSymbol, matchCount);
+            if (paylineEntry == null)
+            {
+                return 0;
+            }
 
-            if (paylineEntry != null)
+            if (includeDetails)
             {
                 result.LineWins.Add(new LineWin
                 {
@@ -60,18 +79,32 @@ namespace Scripts.Core.Engine
                     Payout = paylineEntry.Payout
                 });
             }
+
+            return paylineEntry.Payout;
         }
 
-        private void EvaluateWays(SpinResult result)
+        private int EvaluateWays(SpinResult result, bool includeDetails)
         {
-            foreach (SymbolData symbol in _model.Symbols.Where(s => !s.IsScatter && !s.IsBonus))
+            int totalPayout = 0;
+
+            for (int symbolIndex = 0; symbolIndex < _regularSymbols.Count; symbolIndex++)
             {
+                SymbolData symbol = _regularSymbols[symbolIndex];
                 int ways = 1;
                 int matchedReels = 0;
 
-                foreach (List<int> reel in result.LandedSymbolMatrix)
+                for (int reelIndex = 0; reelIndex < result.LandedSymbolMatrix.Count; reelIndex++)
                 {
-                    int reelMatches = reel.Count(symbolId => symbolId == symbol.Id);
+                    List<int> reel = result.LandedSymbolMatrix[reelIndex];
+                    int reelMatches = 0;
+                    for (int rowIndex = 0; rowIndex < reel.Count; rowIndex++)
+                    {
+                        if (reel[rowIndex] == symbol.Id)
+                        {
+                            reelMatches++;
+                        }
+                    }
+
                     if (reelMatches == 0)
                     {
                         break;
@@ -81,12 +114,16 @@ namespace Scripts.Core.Engine
                     matchedReels++;
                 }
 
-                PaytableEntry wayEntry = _model.Paytable
-                    .Where(entry => entry.SymbolId == symbol.Id && entry.MatchCount <= matchedReels)
-                    .OrderByDescending(entry => entry.MatchCount)
-                    .FirstOrDefault();
+                PaytableEntry wayEntry = FindBestPaytableEntry(symbol.Id, matchedReels);
+                if (wayEntry == null)
+                {
+                    continue;
+                }
 
-                if (wayEntry != null)
+                int payout = wayEntry.Payout * ways;
+                totalPayout += payout;
+
+                if (includeDetails)
                 {
                     result.LineWins.Add(new LineWin
                     {
@@ -94,23 +131,43 @@ namespace Scripts.Core.Engine
                         SymbolId = symbol.Id,
                         MatchCount = wayEntry.MatchCount,
                         Ways = ways,
-                        Payout = wayEntry.Payout * ways
+                        Payout = payout
                     });
                 }
             }
+
+            return totalPayout;
         }
 
-        private void EvaluateScatter(SpinResult result)
+        private int EvaluateScatter(SpinResult result, bool includeDetails)
         {
-            foreach (SymbolData symbol in _model.Symbols.Where(s => s.IsScatter || s.IsBonus))
-            {
-                int totalCount = result.LandedSymbolMatrix.Sum(reel => reel.Count(symbolId => symbolId == symbol.Id));
-                PaytableEntry scatterEntry = _model.Paytable
-                    .Where(entry => entry.SymbolId == symbol.Id && entry.MatchCount <= totalCount)
-                    .OrderByDescending(entry => entry.MatchCount)
-                    .FirstOrDefault();
+            int totalPayout = 0;
 
-                if (scatterEntry != null)
+            for (int symbolIndex = 0; symbolIndex < _scatterSymbols.Count; symbolIndex++)
+            {
+                SymbolData symbol = _scatterSymbols[symbolIndex];
+                int totalCount = 0;
+
+                for (int reelIndex = 0; reelIndex < result.LandedSymbolMatrix.Count; reelIndex++)
+                {
+                    List<int> reel = result.LandedSymbolMatrix[reelIndex];
+                    for (int rowIndex = 0; rowIndex < reel.Count; rowIndex++)
+                    {
+                        if (reel[rowIndex] == symbol.Id)
+                        {
+                            totalCount++;
+                        }
+                    }
+                }
+
+                PaytableEntry scatterEntry = FindBestPaytableEntry(symbol.Id, totalCount);
+                if (scatterEntry == null)
+                {
+                    continue;
+                }
+
+                totalPayout += scatterEntry.Payout;
+                if (includeDetails)
                 {
                     result.ScatterWins.Add(new ScatterWin
                     {
@@ -120,17 +177,60 @@ namespace Scripts.Core.Engine
                     });
                 }
             }
+
+            return totalPayout;
+        }
+
+        private PaytableEntry FindBestPaytableEntry(int symbolId, int matchedCount)
+        {
+            PaytableEntry bestEntry = null;
+            for (int i = 0; i < _model.Paytable.Count; i++)
+            {
+                PaytableEntry entry = _model.Paytable[i];
+                if (entry.SymbolId != symbolId || entry.MatchCount > matchedCount)
+                {
+                    continue;
+                }
+
+                if (bestEntry == null || entry.MatchCount > bestEntry.MatchCount)
+                {
+                    bestEntry = entry;
+                }
+            }
+
+            return bestEntry;
         }
 
         private void EvaluateFeatures(SpinResult result)
         {
-            SymbolData bonusSymbol = _model.Symbols.FirstOrDefault(symbol => symbol.IsBonus);
+            SymbolData bonusSymbol = null;
+            for (int i = 0; i < _model.Symbols.Count; i++)
+            {
+                if (_model.Symbols[i].IsBonus)
+                {
+                    bonusSymbol = _model.Symbols[i];
+                    break;
+                }
+            }
+
             if (bonusSymbol == null)
             {
                 return;
             }
 
-            int bonusCount = result.LandedSymbolMatrix.Sum(reel => reel.Count(symbolId => symbolId == bonusSymbol.Id));
+            int bonusCount = 0;
+            for (int reelIndex = 0; reelIndex < result.LandedSymbolMatrix.Count; reelIndex++)
+            {
+                List<int> reel = result.LandedSymbolMatrix[reelIndex];
+                for (int rowIndex = 0; rowIndex < reel.Count; rowIndex++)
+                {
+                    if (reel[rowIndex] == bonusSymbol.Id)
+                    {
+                        bonusCount++;
+                    }
+                }
+            }
+
             if (bonusCount >= 2)
             {
                 result.TriggeredFeatures.Add("bonus_anticipation");
