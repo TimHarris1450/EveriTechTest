@@ -48,6 +48,23 @@ namespace Scripts
             }
         }
 
+
+        public int GetResolvedSymbolId(int childIndex)
+        {
+            return _resolvedSymbolsByChild.TryGetValue(childIndex, out int symbolId) ? symbolId : -1;
+        }
+
+        public Animator GetSymbolAnimator(int childIndex)
+        {
+            if (childIndex < 0 || childIndex >= transform.childCount)
+            {
+                return null;
+            }
+
+            Transform symbolSlot = transform.GetChild(childIndex);
+            return symbolSlot.childCount > 0 ? symbolSlot.GetChild(0).GetComponent<Animator>() : null;
+        }
+
         public void RandomImage(int childIndex)
         {
             GameObject child = transform.GetChild(childIndex).gameObject;
