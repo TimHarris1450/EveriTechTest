@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,15 +73,30 @@ namespace Scripts
         private GameObject ResolvePrefabForChild(int childIndex)
         {
             if (_resolvedSymbolsByChild.TryGetValue(childIndex, out int symbolId)
-                && _symbolDataById.TryGetValue(symbolId, out SymbolData symbolData)
-                && _symbolRegistry != null
-                && _symbolRegistry.TryGetPrefab(symbolData.PrefabKey, out GameObject resolvedPrefab)
-                && (!_bonusSymbol || resolvedPrefab != _bonusSymbol))
+                && _symbolDataById.TryGetValue(symbolId, out SymbolData symbolData))
             {
-                return resolvedPrefab;
+                if (_symbolRegistry == null)
+                {
+                    _symbolRegistry = FindObjectOfType<SymbolRegistry>();
+                }
+
+                if (_symbolRegistry != null
+                    && _symbolRegistry.TryGetPrefab(symbolData.PrefabKey, out GameObject resolvedPrefab)
+                    && (!_bonusSymbol || resolvedPrefab != _bonusSymbol))
+                {
+                    return resolvedPrefab;
+                }
+
+                GameObject matchedFromSymbols = Symbols.Find(symbol => symbol != null
+                    && symbol != _bonusSymbol
+                    && string.Equals(symbol.name, symbolData.PrefabKey, StringComparison.OrdinalIgnoreCase));
+                if (matchedFromSymbols != null)
+                {
+                    return matchedFromSymbols;
+                }
             }
 
-            List<GameObject> nonBonusSymbols = Symbols.FindAll(symbol => symbol != _bonusSymbol);
+            List<GameObject> nonBonusSymbols = Symbols.FindAll(symbol => symbol != null && symbol != _bonusSymbol);
             return nonBonusSymbols.Count > 0 ? nonBonusSymbols[0] : Symbols[0];
         }
 
