@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Scripts.Core.Engine;
 using Scripts.Core.Math;
+using Scripts.Core.MathLoading;
 using Scripts.Presentation;
 using UnityEngine;
 
@@ -35,13 +36,16 @@ namespace Scripts
         [SerializeField]
         private MeterValue _meterValue;
 
+        [SerializeField]
+        private SlotMathConfigAsset _slotMathConfig;
+
         private SlotMathEngine _slotMathEngine;
         private SlotEngine _slotEngine;
         private SlotMathModel _model;
 
         private void Awake()
         {
-            _model = DefaultSlotMathModel.Create();
+            _model = LoadMathModel();
             _slotMathEngine = new SlotMathEngine(_model);
             _slotEngine = new SlotEngine(_model, new SeededRNGProvider());
 
@@ -77,6 +81,25 @@ namespace Scripts
             }
 
             symbolRegistry.BuildFromPrefabs(symbolPrefabs);
+        }
+
+        private SlotMathModel LoadMathModel()
+        {
+            if (_slotMathConfig == null)
+            {
+                Debug.LogWarning("SlotMathConfigAsset is not assigned. Falling back to DefaultSlotMathModel.");
+                return DefaultSlotMathModel.Create();
+            }
+
+            try
+            {
+                return _slotMathConfig.LoadMathModel();
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"Failed to load slot math from config asset: {exception.Message}");
+                return DefaultSlotMathModel.Create();
+            }
         }
 
         public void SpinCheck()

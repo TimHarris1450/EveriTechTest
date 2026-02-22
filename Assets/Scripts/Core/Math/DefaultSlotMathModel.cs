@@ -32,7 +32,7 @@ namespace Scripts.Core.Math
                     new() { SymbolId = 6, MatchCount = 4, Payout = 40 },
                     new() { SymbolId = 6, MatchCount = 5, Payout = 80 }
                 },
-                Config = new SlotMathConfig
+                Config = new SlotMathRuntimeConfig
                 {
                     VisibleRows = 3,
                     BonusEligibleReelIndices = new List<int> { 1, 2, 3 }
