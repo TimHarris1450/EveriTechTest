@@ -1,14 +1,13 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using Scripts.Core.Math;
+using Scripts.Presentation;
 using UnityEngine;
-
 
 namespace Scripts
 {
     public class MachineController : MonoBehaviour
     {
-
         [SerializeField]
         public GameObject Reels;
         [SerializeField]
@@ -19,7 +18,43 @@ namespace Scripts
         [SerializeField]
         private bool _spinning = false;
 
-        // method for starting and stopping spin routine
+        private SlotMathEngine _slotMathEngine;
+
+        private void Awake()
+        {
+            SlotMathModel model = DefaultSlotMathModel.Create();
+            _slotMathEngine = new SlotMathEngine(model);
+
+            SymbolRegistry symbolRegistry = FindObjectOfType<SymbolRegistry>();
+            if (symbolRegistry == null)
+            {
+                GameObject registryObject = new("SymbolRegistry");
+                symbolRegistry = registryObject.AddComponent<SymbolRegistry>();
+            }
+
+            List<GameObject> symbolPrefabs = new();
+
+            for (int i = 0; i < Reels.transform.childCount; i++)
+            {
+                ImageSetter imageSetter = Reels.transform.GetChild(i).GetComponent<ImageSetter>();
+                if (imageSetter != null)
+                {
+                    imageSetter.ConfigureMath(model, i);
+                    imageSetter.SetSymbolRegistry(symbolRegistry);
+
+                    foreach (GameObject symbol in imageSetter.Symbols)
+                    {
+                        if (symbol != null)
+                        {
+                            symbolPrefabs.Add(symbol);
+                        }
+                    }
+                }
+            }
+
+            symbolRegistry.BuildFromPrefabs(symbolPrefabs);
+        }
+
         public void SpinCheck()
         {
             switch (_spinning)
@@ -32,49 +67,49 @@ namespace Scripts
                     break;
             }
         }
-        // coroutine to incrementally start reels
+
         private IEnumerator StartSpin()
         {
             _defaultWait = _wait;
             _spinning = true;
 
-            // int to increment for reel spin
             for (int i = 0; i < Reels.transform.childCount; i++)
             {
-                // set the animator controller state
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("spin");
-                Animator anim = Reels.transform.GetChild(i).GetChild(2).GetChild(0).GetComponent<Animator>();
                 _wait -= _waitIncrement;
                 yield return new WaitForSeconds(_wait);
             }
-            // extra delay for automatic stopping
+
             yield return new WaitForSeconds(_defaultWait);
             StartCoroutine(StopSpin());
         }
-        // stopping the reels
+
         private IEnumerator StopSpin()
         {
             BonusTracker _bonusTracker = FindObjectOfType<BonusTracker>();
             _wait = _defaultWait;
-            // int to increment for reel spin
+
             for (int i = 0; i < Reels.transform.childCount; i++)
             {
-                // set the animator controller state
+                ImageSetter imageSetter = Reels.transform.GetChild(i).GetComponent<ImageSetter>();
+                if (imageSetter != null)
+                {
+                    imageSetter.SetResolvedStopSymbols(_slotMathEngine.ResolveStopSymbolsForReel(i));
+                }
+
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("stop");
                 _wait += 0.5f;
                 yield return new WaitForSeconds(_wait);
                 _bonusTracker.CheckSymbol();
             }
+
             yield return new WaitForSeconds(_wait);
             Stopped();
-
         }
-        // method to call when reels stop
+
         public void Stopped()
         {
-            // set spinning to false
             _spinning = false;
         }
     }
 }
-
