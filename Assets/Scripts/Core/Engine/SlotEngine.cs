@@ -19,5 +19,12 @@ namespace Scripts.Core.Engine
             _payoutCalculator.Evaluate(result);
             return result;
         }
+
+        public SpinResult Spin(SpinResult reusableResult, bool includeDetailedWins)
+        {
+            SpinResult result = _spinResolver.Resolve(reusableResult);
+            _payoutCalculator.Evaluate(result, includeDetailedWins);
+            return result;
+        }
     }
 }
