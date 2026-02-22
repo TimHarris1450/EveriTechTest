@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Scripts.Presentation
@@ -26,15 +25,47 @@ namespace Scripts.Presentation
 
         public void BuildFromPrefabs(IEnumerable<GameObject> prefabs)
         {
-            _bindings = prefabs?
-                .Where(prefab => prefab != null)
-                .GroupBy(prefab => prefab.name, StringComparer.OrdinalIgnoreCase)
-                .Select(group => new SymbolPrefabBinding
+            Dictionary<string, GameObject> merged = new(StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 0; i < _bindings.Count; i++)
+            {
+                SymbolPrefabBinding binding = _bindings[i];
+                if (binding?.Prefab == null || string.IsNullOrWhiteSpace(binding.PrefabKey))
                 {
-                    PrefabKey = group.Key,
-                    Prefab = group.First()
-                })
-                .ToList() ?? new List<SymbolPrefabBinding>();
+                    continue;
+                }
+
+                if (!merged.ContainsKey(binding.PrefabKey))
+                {
+                    merged[binding.PrefabKey] = binding.Prefab;
+                }
+            }
+
+            if (prefabs != null)
+            {
+                foreach (GameObject prefab in prefabs)
+                {
+                    if (prefab == null || string.IsNullOrWhiteSpace(prefab.name))
+                    {
+                        continue;
+                    }
+
+                    if (!merged.ContainsKey(prefab.name))
+                    {
+                        merged[prefab.name] = prefab;
+                    }
+                }
+            }
+
+            _bindings = new List<SymbolPrefabBinding>(merged.Count);
+            foreach (KeyValuePair<string, GameObject> pair in merged)
+            {
+                _bindings.Add(new SymbolPrefabBinding
+                {
+                    PrefabKey = pair.Key,
+                    Prefab = pair.Value
+                });
+            }
 
             RebuildLookupFromBindings();
         }

@@ -32,6 +32,12 @@ namespace Scripts.Core.Math
                     new() { SymbolId = 6, MatchCount = 4, Payout = 40 },
                     new() { SymbolId = 6, MatchCount = 5, Payout = 80 }
                 },
+                BonusPaytable = new List<BonusPaytableEntry>
+                {
+                    new() { Count = 3, Payout = 100 },
+                    new() { Count = 4, Payout = 500 },
+                    new() { Count = 5, Payout = 2000 }
+                },
                 Config = new SlotMathRuntimeConfig
                 {
                     VisibleRows = 3,

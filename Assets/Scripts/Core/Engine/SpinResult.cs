@@ -10,7 +10,7 @@ namespace Scripts.Core.Engine
         public int SymbolId;
         public int MatchCount;
         public int Ways;
-        public int Payout;
+        public long Payout;
     }
 
     [Serializable]
@@ -18,7 +18,7 @@ namespace Scripts.Core.Engine
     {
         public int SymbolId;
         public int Count;
-        public int Payout;
+        public long Payout;
     }
 
     [Serializable]
@@ -28,7 +28,7 @@ namespace Scripts.Core.Engine
         public List<List<int>> LandedSymbolMatrix = new();
         public List<LineWin> LineWins = new();
         public List<ScatterWin> ScatterWins = new();
-        public int TotalPayout;
+        public long TotalPayout;
         public List<string> TriggeredFeatures = new();
 
         public SpinResult()

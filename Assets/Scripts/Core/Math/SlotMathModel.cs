@@ -3,6 +3,11 @@ using System.Collections.Generic;
 
 namespace Scripts.Core.Math
 {
+    public enum PayoutMode
+    {
+        SingleCenterLine = 0
+    }
+
     [Serializable]
     public class SymbolData
     {
@@ -26,7 +31,7 @@ namespace Scripts.Core.Math
     {
         public int SymbolId;
         public int MatchCount;
-        public int Payout;
+        public long Payout;
     }
 
     [Serializable]
@@ -34,6 +39,14 @@ namespace Scripts.Core.Math
     {
         public int VisibleRows = 3;
         public List<int> BonusEligibleReelIndices = new();
+        public PayoutMode PayoutMode = PayoutMode.SingleCenterLine;
+    }
+
+    [Serializable]
+    public class BonusPaytableEntry
+    {
+        public int Count;
+        public long Payout;
     }
 
     [Serializable]
@@ -42,6 +55,7 @@ namespace Scripts.Core.Math
         public List<SymbolData> Symbols = new();
         public List<ReelStrip> Reels = new();
         public List<PaytableEntry> Paytable = new();
+        public List<BonusPaytableEntry> BonusPaytable = new();
         public SlotMathRuntimeConfig Config = new();
     }
 }

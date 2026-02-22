@@ -36,6 +36,10 @@ namespace Scripts.Core.MathLoading
             Dictionary<int, SymbolData> symbolById = symbols.ToDictionary(symbol => symbol.Id);
             List<ReelStrip> reels = ParseReels(workbook["ReelStrips"], symbolById);
             List<PaytableEntry> paytable = ParsePaytable(workbook["Paytable"], symbolById);
+            List<BonusPaytableEntry> bonusPaytable = ParseBonusPaytable(
+                workbook.TryGetValue("BonusPaytable", out List<Dictionary<string, string>> bonusPaytableRows)
+                    ? bonusPaytableRows
+                    : null);
             SlotMathRuntimeConfig config = ParseConfig(workbook.TryGetValue("Config", out List<Dictionary<string, string>> configRows) ? configRows : null, reels);
 
             return new SlotMathModel
@@ -43,8 +47,49 @@ namespace Scripts.Core.MathLoading
                 Symbols = symbols,
                 Reels = reels,
                 Paytable = paytable,
+                BonusPaytable = bonusPaytable,
                 Config = config
             };
+        }
+
+        private static List<BonusPaytableEntry> ParseBonusPaytable(IReadOnlyList<Dictionary<string, string>> rows)
+        {
+            List<BonusPaytableEntry> table = new();
+            if (rows == null || rows.Count == 0)
+            {
+                return table;
+            }
+
+            SheetParserHelpers.RequireColumns("BonusPaytable", rows, "Count", "Payout");
+            HashSet<int> seenCounts = new();
+            for (int i = 0; i < rows.Count; i++)
+            {
+                Dictionary<string, string> row = rows[i];
+                int rowNumber = i + 2;
+                int count = SheetParserHelpers.GetRequiredInt("BonusPaytable", row, "Count", rowNumber);
+                string payoutRaw = SheetParserHelpers.GetRequiredString("BonusPaytable", row, "Payout", rowNumber);
+                if (!long.TryParse(payoutRaw, out long payout))
+                {
+                    throw new InvalidDataException($"BonusPaytable row {rowNumber} has invalid Payout '{payoutRaw}'.");
+                }
+                if (count < 1 || payout < 0)
+                {
+                    throw new InvalidDataException($"BonusPaytable row {rowNumber} is invalid. Count must be >= 1 and Payout must be >= 0.");
+                }
+
+                if (!seenCounts.Add(count))
+                {
+                    throw new InvalidDataException($"BonusPaytable row {rowNumber} duplicates Count '{count}'.");
+                }
+
+                table.Add(new BonusPaytableEntry
+                {
+                    Count = count,
+                    Payout = payout
+                });
+            }
+
+            return table;
         }
 
         private static List<SymbolData> ParseSymbols(IReadOnlyList<Dictionary<string, string>> rows)
@@ -174,7 +219,11 @@ namespace Scripts.Core.MathLoading
                 int rowNumber = i + 2;
                 int symbolId = SheetParserHelpers.GetRequiredInt("Paytable", row, "SymbolId", rowNumber);
                 int matchCount = SheetParserHelpers.GetRequiredInt("Paytable", row, "Count", rowNumber);
-                int payout = SheetParserHelpers.GetRequiredInt("Paytable", row, "Payout", rowNumber);
+                string payoutRaw = SheetParserHelpers.GetRequiredString("Paytable", row, "Payout", rowNumber);
+                if (!long.TryParse(payoutRaw, out long payout))
+                {
+                    throw new InvalidDataException($"Paytable row {rowNumber} has invalid Payout '{payoutRaw}'.");
+                }
 
                 if (!symbols.ContainsKey(symbolId))
                 {
@@ -269,6 +318,16 @@ namespace Scripts.Core.MathLoading
                 {
                     throw new InvalidDataException($"Config key 'ReelCount' is {reelCount}, but ReelStrips contains {reels.Count} reels.");
                 }
+            }
+
+            if (values.TryGetValue("PayoutMode", out string payoutModeRaw))
+            {
+                if (!Enum.TryParse(payoutModeRaw, true, out PayoutMode payoutMode))
+                {
+                    throw new InvalidDataException($"Config key 'PayoutMode' has invalid value '{payoutModeRaw}'.");
+                }
+
+                config.PayoutMode = payoutMode;
             }
 
             return config;
