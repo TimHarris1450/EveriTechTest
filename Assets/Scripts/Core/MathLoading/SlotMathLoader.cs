@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Scripts.Core.Math;
-using UnityEngine;
 
 namespace Scripts.Core.MathLoading
 {
@@ -61,6 +60,11 @@ namespace Scripts.Core.MathLoading
                 int rowNumber = i + 2;
 
                 int id = SheetParserHelpers.GetRequiredInt("Symbols", row, "SymbolId", rowNumber);
+                if (id < 0)
+                {
+                    throw new InvalidDataException($"Symbols row {rowNumber} has invalid SymbolId '{id}'. SymbolId must be >= 0.");
+                }
+
                 if (!seenIds.Add(id))
                 {
                     throw new InvalidDataException($"Symbols row {rowNumber} duplicates SymbolId '{id}'.");
@@ -71,9 +75,9 @@ namespace Scripts.Core.MathLoading
                     Id = id,
                     Code = SheetParserHelpers.GetRequiredString("Symbols", row, "Code", rowNumber),
                     PrefabKey = SheetParserHelpers.GetRequiredString("Symbols", row, "PrefabKey", rowNumber),
-                    IsWild = SheetParserHelpers.GetOptionalBool(row, "IsWild"),
-                    IsScatter = SheetParserHelpers.GetOptionalBool(row, "IsScatter"),
-                    IsBonus = SheetParserHelpers.GetOptionalBool(row, "IsBonus")
+                    IsWild = SheetParserHelpers.GetOptionalBool("Symbols", row, "IsWild", rowNumber),
+                    IsScatter = SheetParserHelpers.GetOptionalBool("Symbols", row, "IsScatter", rowNumber),
+                    IsBonus = SheetParserHelpers.GetOptionalBool("Symbols", row, "IsBonus", rowNumber)
                 });
             }
 
@@ -89,7 +93,7 @@ namespace Scripts.Core.MathLoading
         {
             SheetParserHelpers.RequireColumns("ReelStrips", rows, "ReelIndex", "Order", "SymbolId");
 
-            Dictionary<int, List<(int order, int symbolId)>> temp = new();
+            Dictionary<int, List<(int order, int symbolId, int rowNumber)>> temp = new();
 
             for (int i = 0; i < rows.Count; i++)
             {
@@ -100,18 +104,33 @@ namespace Scripts.Core.MathLoading
                 int order = SheetParserHelpers.GetRequiredInt("ReelStrips", row, "Order", rowNumber);
                 int symbolId = SheetParserHelpers.GetRequiredInt("ReelStrips", row, "SymbolId", rowNumber);
 
+                if (reelIndex < 0)
+                {
+                    throw new InvalidDataException($"ReelStrips row {rowNumber} has invalid ReelIndex '{reelIndex}'. ReelIndex must be >= 0.");
+                }
+
+                if (order < 0)
+                {
+                    throw new InvalidDataException($"ReelStrips row {rowNumber} has invalid Order '{order}'. Order must be >= 0.");
+                }
+
                 if (!symbols.ContainsKey(symbolId))
                 {
                     throw new InvalidDataException($"ReelStrips row {rowNumber} references unknown SymbolId '{symbolId}'.");
                 }
 
-                if (!temp.TryGetValue(reelIndex, out List<(int order, int symbolId)> strip))
+                if (!temp.TryGetValue(reelIndex, out List<(int order, int symbolId, int rowNumber)> strip))
                 {
-                    strip = new List<(int order, int symbolId)>();
+                    strip = new List<(int order, int symbolId, int rowNumber)>();
                     temp[reelIndex] = strip;
                 }
 
-                strip.Add((order, symbolId));
+                if (strip.Any(node => node.order == order))
+                {
+                    throw new InvalidDataException($"ReelStrips row {rowNumber} duplicates Order '{order}' for ReelIndex '{reelIndex}'.");
+                }
+
+                strip.Add((order, symbolId, rowNumber));
             }
 
             List<ReelStrip> reels = temp
@@ -147,6 +166,7 @@ namespace Scripts.Core.MathLoading
             SheetParserHelpers.RequireColumns("Paytable", rows, "SymbolId", "Count", "Payout");
 
             List<PaytableEntry> paytable = new();
+            HashSet<(int symbolId, int count)> seenRows = new();
 
             for (int i = 0; i < rows.Count; i++)
             {
@@ -164,6 +184,11 @@ namespace Scripts.Core.MathLoading
                 if (matchCount < 1 || payout < 0)
                 {
                     throw new InvalidDataException($"Paytable row {rowNumber} is invalid. Count must be >= 1 and Payout must be >= 0.");
+                }
+
+                if (!seenRows.Add((symbolId, matchCount)))
+                {
+                    throw new InvalidDataException($"Paytable row {rowNumber} duplicates SymbolId '{symbolId}' with Count '{matchCount}'.");
                 }
 
                 paytable.Add(new PaytableEntry
@@ -222,6 +247,16 @@ namespace Scripts.Core.MathLoading
                         throw new InvalidDataException($"Config key 'BonusEligibleReelIndices' has invalid reel index '{token}'.");
                     }
 
+                    if (reelIndex < 0)
+                    {
+                        throw new InvalidDataException($"Config key 'BonusEligibleReelIndices' has negative reel index '{reelIndex}'.");
+                    }
+
+                    if (parsed.Contains(reelIndex))
+                    {
+                        throw new InvalidDataException($"Config key 'BonusEligibleReelIndices' contains duplicate reel index '{reelIndex}'.");
+                    }
+
                     parsed.Add(reelIndex);
                 }
 
@@ -237,22 +272,6 @@ namespace Scripts.Core.MathLoading
             }
 
             return config;
-        }
-    }
-
-    [CreateAssetMenu(fileName = "SlotMathConfig", menuName = "Slot/Math Config")]
-    public class SlotMathConfigAsset : ScriptableObject
-    {
-        [SerializeField]
-        private string _xlsxRelativePath = "Math/SlotMathTemplate.xlsx";
-
-        public SlotMathModel LoadMathModel()
-        {
-            string path = Path.IsPathRooted(_xlsxRelativePath)
-                ? _xlsxRelativePath
-                : Path.Combine(Application.streamingAssetsPath, _xlsxRelativePath);
-
-            return SlotMathLoader.LoadFromXlsx(path);
         }
     }
 }
