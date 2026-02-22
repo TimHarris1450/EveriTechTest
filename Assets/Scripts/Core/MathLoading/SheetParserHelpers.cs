@@ -45,7 +45,7 @@ namespace Scripts.Core.MathLoading
             return value;
         }
 
-        public static bool GetOptionalBool(IReadOnlyDictionary<string, string> row, string key)
+        public static bool GetOptionalBool(string sheetName, IReadOnlyDictionary<string, string> row, string key, int rowNumber)
         {
             if (!TryGetCaseInsensitive(row, key, out string raw) || string.IsNullOrWhiteSpace(raw))
             {
@@ -68,7 +68,7 @@ namespace Scripts.Core.MathLoading
                 return parsed;
             }
 
-            throw new InvalidDataException($"Invalid boolean value '{raw}' for column '{key}'. Expected true/false or 1/0.");
+            throw new InvalidDataException($"Sheet '{sheetName}' row {rowNumber} column '{key}' has invalid boolean '{raw}'. Expected true/false or 1/0.");
         }
 
         private static bool TryGetCaseInsensitive(IReadOnlyDictionary<string, string> row, string key, out string value)

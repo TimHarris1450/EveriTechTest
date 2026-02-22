@@ -37,7 +37,7 @@ namespace Scripts
         private MeterValue _meterValue;
 
         [SerializeField]
-        private SlotMathConfigAsset _slotMathConfig;
+        private SlotMathConfig _slotMathConfig;
 
         private SlotMathEngine _slotMathEngine;
         private SlotEngine _slotEngine;
@@ -87,7 +87,7 @@ namespace Scripts
         {
             if (_slotMathConfig == null)
             {
-                Debug.LogWarning("SlotMathConfigAsset is not assigned. Falling back to DefaultSlotMathModel.");
+                Debug.LogWarning("SlotMathConfig is not assigned. Falling back to DefaultSlotMathModel.");
                 return DefaultSlotMathModel.Create();
             }
 
