@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+
+using Scripts.Core.Engine;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,6 +15,16 @@ public class MeterValue : MonoBehaviour
     int value = 100000;
 
 
+
+    public void ApplySpinResult(SpinResult spinResult)
+    {
+        if (spinResult == null || spinResult.TotalPayout <= 0)
+        {
+            return;
+        }
+
+        AddToValue(spinResult.TotalPayout);
+    }
 
     // method to add to value
     public void AddToValue(int amount)

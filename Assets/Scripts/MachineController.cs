@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Scripts.Core.Engine;
 using Scripts.Core.Math;
 using Scripts.Presentation;
 using UnityEngine;
@@ -8,6 +10,13 @@ namespace Scripts
 {
     public class MachineController : MonoBehaviour
     {
+        private enum SpinMigrationMode
+        {
+            LegacyOnly,
+            SpinResultOnly,
+            ParallelCompare
+        }
+
         [SerializeField]
         public GameObject Reels;
         [SerializeField]
@@ -17,13 +26,28 @@ namespace Scripts
         private float _waitIncrement = 0.75f;
         [SerializeField]
         private bool _spinning = false;
+        [SerializeField]
+        private SpinMigrationMode _migrationMode = SpinMigrationMode.ParallelCompare;
+        [SerializeField]
+        private BonusTracker _bonusTracker;
+        [SerializeField]
+        private FlyUp _flyUp;
+        [SerializeField]
+        private MeterValue _meterValue;
 
         private SlotMathEngine _slotMathEngine;
+        private SlotEngine _slotEngine;
+        private SlotMathModel _model;
 
         private void Awake()
         {
-            SlotMathModel model = DefaultSlotMathModel.Create();
-            _slotMathEngine = new SlotMathEngine(model);
+            _model = DefaultSlotMathModel.Create();
+            _slotMathEngine = new SlotMathEngine(_model);
+            _slotEngine = new SlotEngine(_model, new SeededRNGProvider());
+
+            _bonusTracker ??= FindObjectOfType<BonusTracker>();
+            _flyUp ??= FindObjectOfType<FlyUp>();
+            _meterValue ??= FindObjectOfType<MeterValue>();
 
             SymbolRegistry symbolRegistry = FindObjectOfType<SymbolRegistry>();
             if (symbolRegistry == null)
@@ -39,7 +63,7 @@ namespace Scripts
                 ImageSetter imageSetter = Reels.transform.GetChild(i).GetComponent<ImageSetter>();
                 if (imageSetter != null)
                 {
-                    imageSetter.ConfigureMath(model, i);
+                    imageSetter.ConfigureMath(_model, i);
                     imageSetter.SetSymbolRegistry(symbolRegistry);
 
                     foreach (GameObject symbol in imageSetter.Symbols)
@@ -86,25 +110,82 @@ namespace Scripts
 
         private IEnumerator StopSpin()
         {
-            BonusTracker _bonusTracker = FindObjectOfType<BonusTracker>();
             _wait = _defaultWait;
+            SpinResult spinResult = (_migrationMode == SpinMigrationMode.LegacyOnly)
+                ? null
+                : _slotEngine.Spin();
 
             for (int i = 0; i < Reels.transform.childCount; i++)
             {
                 ImageSetter imageSetter = Reels.transform.GetChild(i).GetComponent<ImageSetter>();
                 if (imageSetter != null)
                 {
-                    imageSetter.SetResolvedStopSymbols(_slotMathEngine.ResolveStopSymbolsForReel(i));
+                    IReadOnlyList<int> stopSymbols = ResolveStopSymbols(i, spinResult);
+                    imageSetter.SetResolvedStopSymbols(stopSymbols);
                 }
 
                 Reels.transform.GetChild(i).GetComponent<Animator>().SetTrigger("stop");
                 _wait += 0.5f;
                 yield return new WaitForSeconds(_wait);
-                _bonusTracker.CheckSymbol();
+
+                if (_migrationMode != SpinMigrationMode.SpinResultOnly)
+                {
+                    _bonusTracker?.CheckSymbol();
+                }
             }
 
             yield return new WaitForSeconds(_wait);
+
+            if (spinResult != null)
+            {
+                ApplySpinResult(spinResult);
+            }
+
             Stopped();
+        }
+
+        private IReadOnlyList<int> ResolveStopSymbols(int reelIndex, SpinResult spinResult)
+        {
+            if (spinResult != null && reelIndex < spinResult.LandedSymbolMatrix.Count)
+            {
+                return spinResult.LandedSymbolMatrix[reelIndex];
+            }
+
+            return _slotMathEngine.ResolveStopSymbolsForReel(reelIndex);
+        }
+
+        private void ApplySpinResult(SpinResult spinResult)
+        {
+            List<Animator> bonusAnimators = new();
+            int bonusSymbolId = _model.Symbols.FirstOrDefault(symbol => symbol.IsBonus)?.Id ?? -1;
+
+            for (int reelIndex = 0; reelIndex < Reels.transform.childCount; reelIndex++)
+            {
+                ImageSetter imageSetter = Reels.transform.GetChild(reelIndex).GetComponent<ImageSetter>();
+                if (imageSetter == null)
+                {
+                    continue;
+                }
+
+                for (int rowIndex = 0; rowIndex < _model.Config.VisibleRows; rowIndex++)
+                {
+                    int symbolId = imageSetter.GetResolvedSymbolId(rowIndex);
+                    if (symbolId != bonusSymbolId)
+                    {
+                        continue;
+                    }
+
+                    Animator symbolAnimator = imageSetter.GetSymbolAnimator(rowIndex);
+                    if (symbolAnimator != null)
+                    {
+                        bonusAnimators.Add(symbolAnimator);
+                    }
+                }
+            }
+
+            _bonusTracker?.ApplySpinResult(spinResult, bonusAnimators);
+            _flyUp?.TriggerFromSpinResult(spinResult);
+            _meterValue?.ApplySpinResult(spinResult);
         }
 
         public void Stopped()
