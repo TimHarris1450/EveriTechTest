@@ -27,6 +27,15 @@ namespace Scripts
             _reelIndex = reelIndex;
             _symbolDataById = mathModel.Symbols.ToDictionary(symbol => symbol.Id);
             _bonusEligibleReels = new HashSet<int>(mathModel.Config.BonusEligibleReelIndices);
+            if (_symbolRegistry == null)
+            {
+                _symbolRegistry = FindObjectOfType<SymbolRegistry>();
+            }
+        }
+
+        public void SetSymbolRegistry(SymbolRegistry symbolRegistry)
+        {
+            _symbolRegistry = symbolRegistry;
         }
 
         public void SetResolvedStopSymbols(IReadOnlyList<int> stopSymbolIds)

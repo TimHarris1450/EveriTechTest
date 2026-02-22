@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Scripts.Presentation
@@ -20,7 +21,40 @@ namespace Scripts.Presentation
 
         private void Awake()
         {
+            RebuildLookupFromBindings();
+        }
+
+        public void BuildFromPrefabs(IEnumerable<GameObject> prefabs)
+        {
+            _bindings = prefabs?
+                .Where(prefab => prefab != null)
+                .GroupBy(prefab => prefab.name, StringComparer.OrdinalIgnoreCase)
+                .Select(group => new SymbolPrefabBinding
+                {
+                    PrefabKey = group.Key,
+                    Prefab = group.First()
+                })
+                .ToList() ?? new List<SymbolPrefabBinding>();
+
+            RebuildLookupFromBindings();
+        }
+
+        public bool TryGetPrefab(string prefabKey, out GameObject prefab)
+        {
+            if (_prefabsByKey == null)
+            {
+                RebuildLookupFromBindings();
+            }
+
+            prefab = null;
+            return !string.IsNullOrWhiteSpace(prefabKey)
+                && _prefabsByKey.TryGetValue(prefabKey, out prefab);
+        }
+
+        private void RebuildLookupFromBindings()
+        {
             _prefabsByKey = new Dictionary<string, GameObject>(StringComparer.OrdinalIgnoreCase);
+
             foreach (SymbolPrefabBinding binding in _bindings)
             {
                 if (binding?.Prefab == null || string.IsNullOrWhiteSpace(binding.PrefabKey))
@@ -30,14 +64,6 @@ namespace Scripts.Presentation
 
                 _prefabsByKey[binding.PrefabKey] = binding.Prefab;
             }
-        }
-
-        public bool TryGetPrefab(string prefabKey, out GameObject prefab)
-        {
-            prefab = null;
-            return !string.IsNullOrWhiteSpace(prefabKey)
-                && _prefabsByKey != null
-                && _prefabsByKey.TryGetValue(prefabKey, out prefab);
         }
     }
 }
