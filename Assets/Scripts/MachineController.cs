@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Scripts.Core.Engine;
+using Scripts.Core.GameSession;
 using Scripts.Core.Math;
 using Scripts.Core.MathLoading;
+using Scripts.Core.Runtime;
 using Scripts.Presentation;
 using UnityEngine;
 
@@ -10,13 +12,6 @@ namespace Scripts
 {
     public class MachineController : MonoBehaviour
     {
-        private enum SpinMigrationMode
-        {
-            LegacyOnly,
-            SpinResultOnly,
-            ParallelCompare
-        }
-
         [SerializeField]
         public GameObject Reels;
         [SerializeField]
@@ -27,7 +22,7 @@ namespace Scripts
         [SerializeField]
         private bool _spinning;
         [SerializeField]
-        private SpinMigrationMode _migrationMode = SpinMigrationMode.ParallelCompare;
+        private bool _enableLegacyStopSymbolFallbackInDev;
         [SerializeField]
         private BonusTracker _bonusTracker;
         [SerializeField]
@@ -40,27 +35,40 @@ namespace Scripts
         [SerializeField]
         private SlotMathConfig _slotMathConfig;
 
+        [SerializeField]
+        private RuntimeModeConfig _runtimeModeConfig;
+
+        [Header("Economy")]
+        [SerializeField]
+        private long _initialBalance = 100000;
+        [SerializeField]
+        private int _totalBet = 10;
+        [SerializeField]
+        private bool _lockBetChanges = true;
+
         [Header("Debug Seed")]
         [SerializeField]
         private bool _showSeedDebugUi;
         [SerializeField]
         private string _seedInput = string.Empty;
 
-        private SlotMathEngine _slotMathEngine;
         private SlotEngine _slotEngine;
         private SlotMathModel _model;
+        private SlotGameSession _gameSession;
         private readonly List<ImageSetter> _imageSetters = new();
         private readonly List<Animator> _reelAnimators = new();
+        private SpinTransaction _pendingSpinTransaction;
 
         private void Awake()
         {
             _model = LoadMathModel();
-            _slotMathEngine = new SlotMathEngine(_model);
             _slotEngine = new SlotEngine(_model, new SeededRNGProvider());
+            _gameSession = new SlotGameSession(_initialBalance, new BetConfig(_totalBet));
 
             CacheSceneDependencies();
             BuildReelCaches();
             BuildSymbolRegistry();
+            _meterValue?.SetValue(_gameSession.Balance);
         }
 
         private void CacheSceneDependencies()
@@ -110,7 +118,7 @@ namespace Scripts
                 imageSetter.SetSymbolRegistry(_symbolRegistry);
                 imageSetter.SetBonusTracker(_bonusTracker);
                 imageSetter.SetSymbolAnimController(SymbolAnimController.Instance);
-                imageSetter.SetSymbolSwapPoolingEnabled(_migrationMode == SpinMigrationMode.SpinResultOnly);
+                imageSetter.SetSymbolSwapPoolingEnabled(true);
             }
         }
 
@@ -147,7 +155,12 @@ namespace Scripts
         {
             if (_slotMathConfig == null)
             {
-                Debug.LogWarning("SlotMathConfig is not assigned. Falling back to DefaultSlotMathModel.");
+                if (IsProductionMode())
+                {
+                    throw new System.InvalidOperationException("SlotMathConfig is missing in production mode.");
+                }
+
+                Debug.LogWarning("SlotMathConfig is not assigned. Falling back to DefaultSlotMathModel in development.");
                 return DefaultSlotMathModel.Create();
             }
 
@@ -157,9 +170,27 @@ namespace Scripts
             }
             catch (System.Exception exception)
             {
-                Debug.LogError($"Failed to load slot math from config asset: {exception.Message}");
+                if (IsProductionMode())
+                {
+                    throw;
+                }
+
+                Debug.LogError($"Failed to load slot math from config asset: {exception.Message}. Falling back to default model in development.");
                 return DefaultSlotMathModel.Create();
             }
+        }
+
+        private bool IsProductionMode()
+        {
+            return _runtimeModeConfig != null && _runtimeModeConfig.IsProductionMode;
+        }
+
+        private bool AllowLegacyFallback()
+        {
+            return !IsProductionMode()
+                   && _runtimeModeConfig != null
+                   && _runtimeModeConfig.AllowLegacyFallbackInDevelopment
+                   && _enableLegacyStopSymbolFallbackInDev;
         }
 
         public void SpinCheck()
@@ -169,6 +200,20 @@ namespace Scripts
                 StartCoroutine(StopSpin());
                 return;
             }
+
+            if (!_lockBetChanges)
+            {
+                _gameSession.TrySetTotalBet(_totalBet);
+            }
+
+            _pendingSpinTransaction = _gameSession.TryStartSpin();
+            if (!_pendingSpinTransaction.Accepted)
+            {
+                Debug.LogWarning($"Insufficient funds. Balance={_gameSession.Balance}, Bet={_gameSession.CurrentBet.TotalBet}");
+                return;
+            }
+
+            _meterValue?.SetValue(_pendingSpinTransaction.BalanceAfterDeduct);
 
             StartCoroutine(StartSpin());
         }
@@ -196,7 +241,7 @@ namespace Scripts
         private IEnumerator StopSpin()
         {
             _wait = _defaultWait;
-            SpinResult spinResult = _migrationMode == SpinMigrationMode.LegacyOnly ? null : _slotEngine.Spin();
+            SpinResult spinResult = _slotEngine.Spin();
 
             for (int i = 0; i < Reels.transform.childCount; i++)
             {
@@ -215,16 +260,14 @@ namespace Scripts
                 _wait += 0.5f;
                 yield return new WaitForSeconds(_wait);
 
-                if (_migrationMode != SpinMigrationMode.SpinResultOnly)
-                {
-                    _bonusTracker?.CheckSymbol();
-                }
             }
 
             yield return new WaitForSeconds(_wait);
 
             if (spinResult != null)
             {
+                SpinSettlement settlement = _gameSession.SettleSpin(spinResult.TotalPayout);
+                _meterValue?.SetValue(settlement.BalanceAfterSettle);
                 ApplySpinResult(spinResult);
             }
 
@@ -238,7 +281,13 @@ namespace Scripts
                 return spinResult.LandedSymbolMatrix[reelIndex];
             }
 
-            return _slotMathEngine.ResolveStopSymbolsForReel(reelIndex);
+            if (AllowLegacyFallback())
+            {
+                return new SlotMathEngine(_model).ResolveStopSymbolsForReel(reelIndex);
+            }
+
+            Debug.LogError($"Engine spin result missing reel index {reelIndex}.");
+            return System.Array.Empty<int>();
         }
 
         private void ApplySpinResult(SpinResult spinResult)
@@ -280,7 +329,6 @@ namespace Scripts
 
             _bonusTracker?.ApplySpinResult(spinResult, bonusAnimators);
             _flyUp?.TriggerFromSpinResult(spinResult);
-            _meterValue?.ApplySpinResult(spinResult);
         }
 
         public void ApplyDeterministicSeed()
@@ -292,7 +340,6 @@ namespace Scripts
             }
 
             _slotEngine = new SlotEngine(_model, new SeededRNGProvider(parsedSeed));
-            _slotMathEngine = new SlotMathEngine(_model, parsedSeed);
             Debug.Log($"Applied deterministic seed: {parsedSeed}");
         }
 

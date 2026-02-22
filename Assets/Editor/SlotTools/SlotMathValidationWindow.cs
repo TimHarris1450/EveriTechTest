@@ -119,6 +119,12 @@ namespace Scripts.Editor.SlotTools
                     _issues.Add($"Config references BonusEligibleReelIndex {reelIndex}, but that reel does not exist.");
                 }
             }
+
+            bool hasBonusSymbol = model.Symbols.Any(symbol => symbol.IsBonus);
+            if (model.BonusPaytable.Count > 0 && !hasBonusSymbol)
+            {
+                _issues.Add("BonusPaytable is defined but no symbol is marked IsBonus.");
+            }
         }
     }
 }

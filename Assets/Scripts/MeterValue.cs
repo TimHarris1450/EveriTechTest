@@ -12,7 +12,7 @@ public class MeterValue : MonoBehaviour
     [SerializeField]
     private GameObject _coinShower;
     // jackpot value
-    int value = 100000;
+    long value = 100000;
 
 
 
@@ -27,9 +27,15 @@ public class MeterValue : MonoBehaviour
     }
 
     // method to add to value
-    public void AddToValue(int amount)
+    public void AddToValue(long amount)
     {
         value += amount;
+        SetText();
+    }
+
+    public void SetValue(long amount)
+    {
+        value = amount;
         SetText();
     }
     // method to apply to textmesh
@@ -50,7 +56,7 @@ public class MeterValue : MonoBehaviour
     // routine for incremental count up
     private IEnumerator CountUpRoutine()
     {
-        int newValue = value * 2;
+        long newValue = value * 2;
         while (value < newValue)
         {
             CoinShower();

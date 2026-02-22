@@ -42,9 +42,24 @@ This scene is intended to be the staging scene for the migration work:
 - Data-driven math systems can be swapped in incrementally.
 - Presentation scripts can continue to be reused as engine/math loading are refactored.
 
-## Recommended Next Setup Steps
+## Runtime Configuration Requirements
 
-1. Add a `SlotMathConfig` asset assignment in scene-level controller(s).
-2. Bind `SlotMathLoader` initialization to scene startup.
-3. Route spin requests through `SlotEngine` and feed returned `SpinResult` into presentation.
-4. Keep this scene as the integration target for iterative migration tests.
+`MachineController` now expects:
+
+1. `SlotMathConfig` assigned.
+2. Optional `RuntimeModeConfig` assigned for strict startup behavior.
+   - In production mode, missing/invalid workbook throws and startup stops.
+   - In development mode, fallback to `DefaultSlotMathModel` is allowed.
+
+## Economy Loop
+
+- Integer-only economy is now session-driven (long-backed balance).
+- Total bet is deducted when a spin starts.
+- Payout is applied when spin settles.
+- Insufficient-funds blocks spin start, but does not disable the spin button (players can keep attempting/slamming).
+
+## Migration Notes
+
+- Engine-driven path is the default gameplay flow.
+- Legacy stop-symbol fallback is dev-only and must be explicitly enabled.
+- Use `SlotFrameworkBootstrap.unity` as the integration scene for this round.

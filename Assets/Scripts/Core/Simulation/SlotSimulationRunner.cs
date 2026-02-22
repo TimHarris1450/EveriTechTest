@@ -83,7 +83,7 @@ namespace Scripts.Core.Simulation
             for (int spinIndex = 0; spinIndex < request.SpinCount; spinIndex++)
             {
                 SpinResult spinResult = slotEngine.Spin(spinResultBuffer, includeDetailedWins: false);
-                int spinPayout = spinResult.TotalPayout;
+                long spinPayout = spinResult.TotalPayout;
 
                 totalPayout += spinPayout;
                 if (spinPayout > 0)

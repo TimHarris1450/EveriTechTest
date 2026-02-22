@@ -31,6 +31,12 @@
 | `Count` | Yes | Match count (`>= 1`). |
 | `Payout` | Yes | Payout amount (`>= 0`). |
 
+### 4) `BonusPaytable` (optional)
+| Column | Required | Notes |
+|---|---|---|
+| `Count` | Yes | Landed bonus-symbol count (`>= 1`). |
+| `Payout` | Yes | Bonus payout amount (`>= 0`). |
+
 ## Optional sheet
 
 ### `Config`
@@ -43,6 +49,7 @@ Supported keys:
 - `VisibleRows` (integer > 0)
 - `BonusEligibleReelIndices` (comma-separated unique integers, e.g. `1,2,3`)
 - `ReelCount` (integer, validated against unique `ReelIndex` count)
+- `PayoutMode` (currently `SingleCenterLine`)
 
 ## Validation behavior
 The loader throws descriptive errors when:
@@ -51,3 +58,4 @@ The loader throws descriptive errors when:
 - A reel strip is empty.
 - Reel rows contain invalid or duplicate strip orders.
 - Paytable rows have invalid values or duplicate `(SymbolId, Count)` entries.
+- Bonus paytable rows have invalid values or duplicate `Count` entries.

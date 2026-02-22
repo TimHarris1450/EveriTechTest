@@ -126,7 +126,9 @@ namespace Scripts.Editor.SlotTools
                 $"Hash (SHA256): {ComputeSha256(path)}",
                 $"Symbols: {model.Symbols.Count}",
                 $"Reel lengths: {(reelLengths.Length == 0 ? "none" : string.Join(", ", reelLengths))}",
-                $"Paytable rows: {model.Paytable.Count}"
+                $"Paytable rows: {model.Paytable.Count}",
+                $"Bonus paytable rows: {model.BonusPaytable.Count}",
+                $"Payout mode: {model.Config.PayoutMode}"
             });
         }
 
