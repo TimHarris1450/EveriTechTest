@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Scene.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/SlotFrameworkBootstrap.unity
+    guid: 47d53c0bd9324a7e97f45db9b0747f54
   m_configObjects: {}
