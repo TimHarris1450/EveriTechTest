@@ -1,62 +1,88 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
+using Scripts.Core.Math;
+using Scripts.Presentation;
 using UnityEngine;
 
 namespace Scripts
 {
     public class ImageSetter : MonoBehaviour
     {
-        // List of Prefabs to replace
         public List<GameObject> Symbols;
         [SerializeField]
         private GameObject _bonusSymbol;
         [SerializeField]
-        BonusTracker _bonusTracker;
+        private BonusTracker _bonusTracker;
+        [SerializeField]
+        private SymbolRegistry _symbolRegistry;
 
-        // Method to set random image, int to determine which child
+        private readonly Dictionary<int, int> _resolvedSymbolsByChild = new();
+        private Dictionary<int, SymbolData> _symbolDataById = new();
+        private HashSet<int> _bonusEligibleReels = new();
+        private int _reelIndex = -1;
+
+        public void ConfigureMath(SlotMathModel mathModel, int reelIndex)
+        {
+            _reelIndex = reelIndex;
+            _symbolDataById = mathModel.Symbols.ToDictionary(symbol => symbol.Id);
+            _bonusEligibleReels = new HashSet<int>(mathModel.Config.BonusEligibleReelIndices);
+        }
+
+        public void SetResolvedStopSymbols(IReadOnlyList<int> stopSymbolIds)
+        {
+            _resolvedSymbolsByChild.Clear();
+            for (int i = 0; i < stopSymbolIds.Count; i++)
+            {
+                _resolvedSymbolsByChild[i] = stopSymbolIds[i];
+            }
+        }
+
         public void RandomImage(int childIndex)
         {
-            // create reference
             GameObject child = transform.GetChild(childIndex).gameObject;
-            // destroy current child
             Destroy(child.transform.GetChild(0).gameObject);
-            // exclude the bonus symbol from the random selection
-            List<GameObject> nonBonusSymbols = Symbols.FindAll(symbol => symbol != _bonusSymbol);
-            int rando = Random.Range(0, nonBonusSymbols.Count);
-            // make a new child
-            GameObject newChild = Instantiate(nonBonusSymbols[rando]);
-            // add to reel
+
+            GameObject prefabToInstantiate = ResolvePrefabForChild(childIndex);
+            GameObject newChild = Instantiate(prefabToInstantiate);
             newChild.transform.SetParent(child.transform, false);
         }
-        // Set the bonus symbol to the 2nd row for activation
+
         public void SetBonusSymbol()
         {
-            // check if we are the first or last reel
-            if (name == "Reel_1" || name == "Reel_5")
+            if (!_bonusEligibleReels.Contains(_reelIndex))
             {
-                Debug.Log($"{name} is not eligible for a bonus symbol.");
+                Debug.Log($"Reel index {_reelIndex} is not eligible for a bonus symbol.");
                 return;
             }
-            Debug.Log($"{name} is setting a bonus symbol.");
+
+            Debug.Log($"Reel index {_reelIndex} is setting a bonus symbol.");
             StartCoroutine(SetSymbol());
         }
-        
+
+        private GameObject ResolvePrefabForChild(int childIndex)
+        {
+            if (_resolvedSymbolsByChild.TryGetValue(childIndex, out int symbolId)
+                && _symbolDataById.TryGetValue(symbolId, out SymbolData symbolData)
+                && _symbolRegistry != null
+                && _symbolRegistry.TryGetPrefab(symbolData.PrefabKey, out GameObject resolvedPrefab)
+                && (!_bonusSymbol || resolvedPrefab != _bonusSymbol))
+            {
+                return resolvedPrefab;
+            }
+
+            List<GameObject> nonBonusSymbols = Symbols.FindAll(symbol => symbol != _bonusSymbol);
+            return nonBonusSymbols.Count > 0 ? nonBonusSymbols[0] : Symbols[0];
+        }
+
         private IEnumerator SetSymbol()
         {
-            // reference to the symbol anim controller
             SymbolAnimController sac = FindObjectOfType<SymbolAnimController>();
-            // destroy the child and replace with bonus
             Destroy(transform.GetChild(2).GetChild(0).gameObject);
-            // create new symbol (Yes I know it should be a pool, but this is a small project)
             GameObject newChild = Instantiate(Symbols[0]);
-            // reference animator
             Animator anim = newChild.GetComponent<Animator>();
-            // add to bonus tracker
             _bonusTracker.AddSymbol(newChild.GetComponent<Animator>());
-            // increment the bonus tracker
             _bonusTracker.Increment();
-            // set the parent
             newChild.transform.SetParent(transform.GetChild(2), false);
             yield return new WaitForSeconds(0.5f);
             sac.PlayHit(newChild.GetComponent<Animator>());
@@ -64,4 +90,3 @@ namespace Scripts
         }
     }
 }
-
