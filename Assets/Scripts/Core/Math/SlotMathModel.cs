@@ -30,7 +30,7 @@ namespace Scripts.Core.Math
     }
 
     [Serializable]
-    public class SlotMathConfig
+    public class SlotMathRuntimeConfig
     {
         public int VisibleRows = 3;
         public List<int> BonusEligibleReelIndices = new();
@@ -42,6 +42,6 @@ namespace Scripts.Core.Math
         public List<SymbolData> Symbols = new();
         public List<ReelStrip> Reels = new();
         public List<PaytableEntry> Paytable = new();
-        public SlotMathConfig Config = new();
+        public SlotMathRuntimeConfig Config = new();
     }
 }
