@@ -10,15 +10,14 @@ namespace Scripts
         private MeterValue _jackpotMeter;
         [SerializeField]
         private GameObject FlyUpObject;
+        [SerializeField]
         private Transform _flyUpPos;
-        private bool _playing = false;
 
-        public void Awake()
+        private bool _playing;
+
+        public void SetMeterValue(MeterValue meterValue)
         {
-            if (_jackpotMeter == null)
-            {
-                _jackpotMeter = GameObject.Find("JackpotMeter")?.GetComponentInChildren<MeterValue>();
-            }
+            _jackpotMeter = meterValue;
         }
 
         public void TriggerFromSpinResult(SpinResult spinResult)
@@ -31,25 +30,23 @@ namespace Scripts
 
         public void StartFlyUp()
         {
-            if (_playing) { return; }
+            if (_playing)
+            {
+                return;
+            }
+
             StartCoroutine(FlyUpRoutine());
         }
 
         private IEnumerator FlyUpRoutine()
         {
-            FlyUpObject.SetActive(true);
-            _playing = true;
             if (_flyUpPos == null)
             {
-                _flyUpPos = GameObject.Find("FlyUpPoint")?.transform;
-            }
-
-            if (_flyUpPos == null)
-            {
-                _playing = false;
                 yield break;
             }
 
+            FlyUpObject.SetActive(true);
+            _playing = true;
             yield return new WaitForSeconds(1);
             while (Vector3.Distance(FlyUpObject.transform.position, _flyUpPos.position) > 0.1f)
             {
@@ -57,11 +54,7 @@ namespace Scripts
                 yield return null;
             }
 
-            if (_jackpotMeter != null)
-            {
-                _jackpotMeter.AddToValue(1000);
-            }
-
+            _jackpotMeter?.AddToValue(1000);
             FlyUpObject.SetActive(false);
             FlyUpObject.transform.position = transform.parent.position;
             _playing = false;

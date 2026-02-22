@@ -9,9 +9,21 @@ namespace Scripts
     {
         [SerializeField]
         private BlackHoleController _blackHole;
+        [SerializeField]
+        private SymbolAnimController _symbolAnimController;
 
         public List<Animator> Animators;
-        public int BonusCount = 0;
+        public int BonusCount;
+
+        private void Awake()
+        {
+            _symbolAnimController ??= SymbolAnimController.Instance;
+        }
+
+        public void SetSymbolAnimController(SymbolAnimController symbolAnimController)
+        {
+            _symbolAnimController = symbolAnimController;
+        }
 
         public void AddSymbol(Animator anim)
         {
@@ -41,9 +53,9 @@ namespace Scripts
             ResetSymbols();
             if (bonusAnimators != null)
             {
-                foreach (Animator animator in bonusAnimators)
+                for (int i = 0; i < bonusAnimators.Count; i++)
                 {
-                    AddSymbol(animator);
+                    AddSymbol(bonusAnimators[i]);
                 }
             }
 
@@ -53,8 +65,7 @@ namespace Scripts
 
         private IEnumerator CheckSymbolCoroutine(SpinResult spinResult = null)
         {
-            SymbolAnimController symAnims = FindObjectOfType<SymbolAnimController>();
-            if (symAnims == null)
+            if (_symbolAnimController == null)
             {
                 yield break;
             }
@@ -63,12 +74,12 @@ namespace Scripts
             {
                 case 3:
                 case > 3:
-                    symAnims.PlayWin(Animators);
+                    _symbolAnimController.PlayWin(Animators);
                     yield return new WaitForSeconds(0.85f);
                     _blackHole?.PlayBlackHole();
                     break;
                 case 2:
-                    symAnims.PlayAnticipation(Animators);
+                    _symbolAnimController.PlayAnticipation(Animators);
                     break;
             }
 
